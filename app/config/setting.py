@@ -2,7 +2,7 @@
 @Author    : fengjinqi
 @Time      : 2026/6/4 10:28 AM
 @Email     : fengjinqi1204@gmail.com
-@File      : settungs.py
+@File      : setting.py
 @Software  : PyCharm
 """
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -34,4 +34,4 @@ class Settings(BaseSettings):
 
 settings = Settings()
 if __name__ == '__main__':
-    print(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    print(settings.DB_HOST)

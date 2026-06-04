@@ -5,14 +5,17 @@
 @File      : news.py
 @Software  : PyCharm
 """
+from typing import Annotated, Any, Coroutine
+
 from fastapi import APIRouter
-router = APIRouter(prefix="/news",tags=["news"])
+from fastapi.params import Query, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-@router.get("/category")
-async def get_news_category():
-    return {"message": "Hello World"}
+from app.core.db import get_db
+from app.core.response import resp_success, ResponseModel
+from app.schems.category import CategoryOut
+from app.services.category_service import CategoryService
+
+router = APIRouter(prefix="/news", tags=["news"])
 
 
-@router.get("/")
-async def get_news():
-    return {"message": "Hello World"}
