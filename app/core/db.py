@@ -5,6 +5,9 @@
 @File      : db.py
 @Software  : PyCharm
 """
+from typing import AsyncGenerator
+
+
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm import declarative_base
@@ -25,7 +28,6 @@ async_engine = create_async_engine(
     pool_recycle=3600,  # 连接最大存活时间（秒），防止MySQL默认8小时断开
     pool_pre_ping=True,  # 取连接前先探测存活，避免使用已断开的连接
     pool_reset_on_return="rollback",  # 连接归还池时的重置策略，rollback比commit更安全
-
 )
 
 # 创建异步会话工厂
@@ -38,7 +40,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
-async def get_db() -> AsyncSession:
+async def get_db() -> AsyncGenerator[AsyncSession , None]:
     """
     获取数据库会话依赖项
 
@@ -69,4 +71,8 @@ async def create_db():
     如果表已存在，则不会重复创建。
     """
     async with async_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+        try:
+            await conn.run_sync(Base.metadata.create_all)
+        except Exception as e:
+            print(e)
+            raise e

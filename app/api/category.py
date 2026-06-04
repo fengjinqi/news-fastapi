@@ -7,7 +7,7 @@
 """
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Path
+from fastapi import APIRouter, Depends, Path, Body
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_db
@@ -18,7 +18,7 @@ from app.services.category_service import CategoryService
 router = APIRouter(prefix="/category", tags=["分类"])
 
 
-@router.get("")
+@router.get("", summary="获取列表")
 async def get_news_category(db: AsyncSession = Depends(get_db)) -> ResponseModel:
     data = await CategoryService.read(db)
     return resp_success(data=[CategoryOut.model_validate(item).model_dump() for item in data])
@@ -31,7 +31,7 @@ async def create_news_category(param: CategoryIn, db: AsyncSession = Depends(get
 
 
 @router.put("/{id}")
-async def update_news_category(id: int, param: CategoryIn, db: AsyncSession = Depends(get_db)) -> ResponseModel:
+async def update_news_category(id: Annotated[int, Path(gt=0, description="分类ID")], param: Annotated[CategoryIn, Body(..., description="分类参数")], db: AsyncSession = Depends(get_db)) -> ResponseModel:
     obj = await CategoryService.update(db, id, param)
     if obj is None:
         return resp_error(code=404, message="分类不存在")
@@ -39,7 +39,7 @@ async def update_news_category(id: int, param: CategoryIn, db: AsyncSession = De
 
 
 @router.delete("/{id}")
-async def delete_news_category(id: Annotated[int, Path(gt=1, title='"分类ID"')],
+async def delete_news_category(id: Annotated[int, Path(gt=1, description="分类ID")],
                                db: AsyncSession = Depends(get_db)) -> ResponseModel:
     obj =await CategoryService.delete(db, id)
 
