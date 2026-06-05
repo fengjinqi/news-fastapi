@@ -5,12 +5,13 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Sequence, Tuple
+from typing import Sequence, Tuple, Any, Coroutine
 
-from sqlalchemy import select
+from sqlalchemy import select, Row
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.functions import func
 
+from app.models.category import CategoryModel
 from app.models.news import NewsModel
 
 
@@ -29,3 +30,14 @@ async def read(db: AsyncSession, id: int, page: int, size: int) -> Tuple[Sequenc
 
     return result.scalars().all(),total
 
+
+async def read_detail(db: AsyncSession, id:int)-> Sequence[Row[tuple[NewsModel, str]]]:
+    """
+    查询新闻详情
+    :param db: 数据库会话
+    :param id: 新闻id
+    :return: 新闻详情
+    """
+    result = await db.execute(select(NewsModel, CategoryModel.name.label("category_name")).where(NewsModel.id == id).join(CategoryModel, NewsModel.category_id == CategoryModel.id))
+
+    return result.all()
