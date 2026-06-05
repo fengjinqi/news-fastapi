@@ -5,14 +5,13 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Any, Coroutine, Sequence, Optional
+from typing import Sequence, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud import category_crud
 from app.crud.category_crud import CRUDCategory
 from app.models.category import CategoryModel
-from app.schems.category import CategoryOut, CategoryIn
+from app.schems.category import CategoryIn
 
 
 class CategoryService:
