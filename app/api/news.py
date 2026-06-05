@@ -46,12 +46,12 @@ async def get_news_detail(id: Annotated[int, Path(gt=0, description="新闻ID")]
     @param id: 新闻ID
     @return: 新闻详情
     """
-    rows = await news_service.read_detail(db, id)
+    rows,category_name = await news_service.read_detail(db, id)
+    print(rows,category_name,'rows')
     if rows is None:
         return resp_error(code=404, message="新闻不存在")
-    news, category = rows[0]
-    print(news, category)
-    data = NewsRespone.model_validate(news).model_dump()
-    data["category_name"] = category
+
+    data = NewsRespone.model_validate(rows).model_dump()
+    data["category_name"] = category_name
 
     return resp_success(data=data)

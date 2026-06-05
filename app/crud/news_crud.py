@@ -7,7 +7,7 @@
 """
 from typing import Sequence, Tuple
 
-from sqlalchemy import select, Row
+from sqlalchemy import select,  update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.functions import func
 
@@ -31,13 +31,17 @@ async def read(db: AsyncSession, id: int, page: int, size: int) -> Tuple[Sequenc
     return result.scalars().all(),total
 
 
-async def read_detail(db: AsyncSession, id:int)-> Sequence[Row[tuple[NewsModel, str]]]:
+async def read_detail(db: AsyncSession, id:int)->Tuple[NewsModel, str]:
     """
     查询新闻详情
+    并且更新新闻的浏览次数
     :param db: 数据库会话
     :param id: 新闻id
     :return: 新闻详情
     """
     result = await db.execute(select(NewsModel, CategoryModel.name.label("category_name")).where(NewsModel.id == id).join(CategoryModel, NewsModel.category_id == CategoryModel.id))
+    row = result.first()
+    if row:
+        await db.execute(update(NewsModel).where(NewsModel.id == id).values(views=NewsModel.views + 1))
 
-    return result.all()
+    return row[0],row[1]
