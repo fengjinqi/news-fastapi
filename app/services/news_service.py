@@ -5,8 +5,7 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Sequence, Tuple
-
+from typing import Sequence, Tuple, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,5 +17,5 @@ async def read(db: AsyncSession, id: int, page: int, size: int) -> Tuple[Sequenc
     return await news_crud.read(db,id, page, size)
 
 
-async def read_detail(db: AsyncSession, id: int)-> tuple[NewsModel, str]:
+async def read_detail(db: AsyncSession, id: int)-> tuple[Optional[NewsModel], Optional[str], Sequence[NewsModel]]:
     return await news_crud.read_detail(db, id)

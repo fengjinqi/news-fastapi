@@ -5,7 +5,7 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Sequence, Tuple
+from typing import Sequence, Tuple, Optional
 
 from sqlalchemy import select,  update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,7 +31,7 @@ async def read(db: AsyncSession, id: int, page: int, size: int) -> Tuple[Sequenc
     return result.scalars().all(),total
 
 
-async def read_detail(db: AsyncSession, id:int)->Tuple[NewsModel, str]:
+async def read_detail(db: AsyncSession, id:int)->Tuple[Optional[NewsModel], Optional[str], Sequence[NewsModel]]:
     """
     查询新闻详情
     并且更新新闻的浏览次数
@@ -39,9 +39,21 @@ async def read_detail(db: AsyncSession, id:int)->Tuple[NewsModel, str]:
     :param id: 新闻id
     :return: 新闻详情
     """
+
     result = await db.execute(select(NewsModel, CategoryModel.name.label("category_name")).where(NewsModel.id == id).join(CategoryModel, NewsModel.category_id == CategoryModel.id))
     row = result.first()
-    if row:
-        await db.execute(update(NewsModel).where(NewsModel.id == id).values(views=NewsModel.views + 1))
+    if row is None:
+        return None, None, []
+    news, category_name = row[0], row[1]
+    await db.execute(update(NewsModel).where(NewsModel.id == id).values(views=NewsModel.views + 1))
+    # 查询同分类下的相关新闻（排除当前新闻），按浏览量和发布时间降序排列，取前5条
+    related_news_result = await db.execute(
+        select(NewsModel)
+        .where(NewsModel.category_id == row[0].category_id, NewsModel.id != id)
+        .order_by(NewsModel.views.desc(), NewsModel.publish_time.desc())
+        .limit(5)
+    )
+    related_news = related_news_result.scalars().all()
+    # 返回当前新闻详情和分类名称
+    return news, category_name, related_news
 
-    return row[0],row[1]
