@@ -5,7 +5,7 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Sequence, Tuple, Any, Coroutine
+from typing import Sequence, Tuple
 
 from sqlalchemy import select, Row
 from sqlalchemy.ext.asyncio import AsyncSession
