@@ -5,14 +5,14 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Any, Coroutine, Sequence, Optional
+from typing import  Sequence
 
-from sqlalchemy import select, delete
-from sqlalchemy.dialects.mysql import insert
+from sqlalchemy import select
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.category import CategoryModel
-from app.schems.category import CategoryOut, CategoryIn
+from app.schems.category import CategoryRequest
 
 
 class CRUDCategory:
@@ -21,10 +21,11 @@ class CRUDCategory:
     """
 
     @staticmethod
-    async def create(db: AsyncSession, param: CategoryIn) -> CategoryModel:
+    async def create(db: AsyncSession, param: CategoryRequest) -> CategoryModel:
         """
         创建数据
-        :param kwargs: 数据
+        :param param:
+        :param db:
         :return: 创建的数据
         """
         obj = CategoryModel(**param.model_dump())
@@ -43,7 +44,7 @@ class CRUDCategory:
         return result.scalars().all()
 
     @staticmethod
-    async def update(db: AsyncSession, id: int, param: CategoryIn) -> type[CategoryModel] | None:
+    async def update(db: AsyncSession, id: int, param: CategoryRequest) -> type[CategoryModel] | None:
         """
         更新数据
         :param db: 数据库会话

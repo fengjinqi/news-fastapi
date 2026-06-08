@@ -10,11 +10,11 @@
 from pydantic import BaseModel, Field
 
 
-class CategoryIn(BaseModel):
+class CategoryRequest(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     sort_order: int = Field(..., ge=0)
 
-class CategoryOut(BaseModel):
+class CategoryResponse(BaseModel):
     id: int
     name: str
     sort_order: int

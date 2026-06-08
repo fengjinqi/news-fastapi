@@ -7,8 +7,9 @@
 """
 from fastapi import APIRouter
 
-from app.api import news, category
+from app.api import news, category, users
 
 router = APIRouter()
 router.include_router(news.router)
 router.include_router(category.router)
+router.include_router(users.router)

@@ -7,12 +7,12 @@
 """
 
 from datetime import datetime
-
+from typing import Optional
 
 from sqlalchemy import  ForeignKey, DateTime, Index, Integer, String, Text
 
-from sqlalchemy.orm import Mapped
-from sqlalchemy.testing.schema import mapped_column
+from sqlalchemy.orm import Mapped,mapped_column
+
 
 from app.models.base import BaseModel
 
@@ -29,10 +29,10 @@ class NewsModel(BaseModel):
     )
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, comment="主键ID")
     title: Mapped[str] = mapped_column(String(255), nullable=False, comment="标题")
-    description: Mapped[str] = mapped_column(String(255), comment="描述")
+    description: Mapped[Optional[str]] = mapped_column(String(255), comment="描述")
     author: Mapped[str] = mapped_column(String(255), nullable=False, comment="作者")
     content: Mapped[str] = mapped_column(Text, nullable=False, comment="内容")
-    image: Mapped[str] = mapped_column(String(255), comment="图片")
+    image: Mapped[Optional[str]] = mapped_column(String(255), comment="图片")
 #     CASCADE - 父记录删除，子记录同步删除
 #     SET NULL - 父记录删除，子记录该字段置为 NULL
 #     RESTRICT - 有子记录时禁止删除父记录（默认行为）

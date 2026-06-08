@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.category_crud import CRUDCategory
 from app.models.category import CategoryModel
-from app.schems.category import CategoryIn
+from app.schems.category import CategoryRequest
 
 
 class CategoryService:
@@ -28,9 +28,10 @@ class CategoryService:
         return await CRUDCategory.read(db)
 
     @staticmethod
-    async def create(db: AsyncSession, param: CategoryIn) -> CategoryModel:
+    async def create(db: AsyncSession, param: CategoryRequest) -> CategoryModel:
         """
         创建分类
+        :param db:
         :param param: 分类参数
         :return: 创建的分类
         """
@@ -38,7 +39,7 @@ class CategoryService:
         return await CRUDCategory.create(db, param)
 
     @staticmethod
-    async def update(db: AsyncSession, id: int, param: CategoryIn) -> Optional[CategoryModel]:
+    async def update(db: AsyncSession, id: int, param: CategoryRequest) -> Optional[CategoryModel]:
         """
         更新分类
         :param db: 数据库会话
