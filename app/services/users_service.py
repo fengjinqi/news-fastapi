@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.user_crud import CRUDUser
 from app.models.users import User
-from app.schems.user import UserRequest
+from app.schems.user import UserRegisterRequest
 from app.utils.security import verify_password
 
 if __name__ == '__main__':
@@ -28,7 +28,7 @@ if __name__ == '__main__':
     print(pwd_hash.verify("12345678", hashed))  # # True
 
 
-async def create(db: AsyncSession, user: UserRequest) -> User:
+async def create(db: AsyncSession, user: UserRegisterRequest) -> User:
     return await CRUDUser.create(db, user)
 
 
@@ -46,3 +46,8 @@ async def read(db: AsyncSession, user_id: int) -> Optional[User]:
 
 async def get_by_username(db: AsyncSession, username: str) -> Optional[User]:
     return await CRUDUser.get_by_username(db, username)
+
+
+async def update(db,id, param):
+    return await CRUDUser.update(db, id, param)
+

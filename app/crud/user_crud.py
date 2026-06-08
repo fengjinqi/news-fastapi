@@ -10,15 +10,16 @@ from typing import Optional
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+
 from app.models.users import User
-from app.schems.user import UserRequest
+from app.schems.user import UserRegisterRequest
 from app.utils.security import hash_password
 
 
 class CRUDUser:
 
     @staticmethod
-    async def create(db: AsyncSession, user: UserRequest) -> User:
+    async def create(db: AsyncSession, user: UserRegisterRequest) -> User:
         password = hash_password(user.password)
         obj = User(username=user.username, password=password)
         db.add(obj)
@@ -34,3 +35,17 @@ class CRUDUser:
     async def get_by_username(db: AsyncSession, username: str) -> Optional[User]:
         result = await db.execute(select(User).where(User.username == username))
         return result.scalar_one_or_none()
+
+    @staticmethod
+    async def update(db: AsyncSession, id: int, param)-> Optional[User]:
+        obj: Optional[User] = await db.get(User, id)
+        if obj is None:
+            return None
+        if param.username is not None and param.username != obj.username:
+            existing = await CRUDUser.get_by_username(db, param.username)
+            if existing is not None:
+                raise ValueError("用户名已存在")# 用户名已存在
+        for key, value in param.model_dump(exclude_unset=True).items():
+            setattr(obj, key, value)
+        await db.flush()
+        return obj

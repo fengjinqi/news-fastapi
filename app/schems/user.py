@@ -10,7 +10,7 @@ from typing import Optional
 from pydantic import BaseModel, Field, model_validator
 
 
-class UserRequest(BaseModel):
+class UserRegisterRequest(BaseModel):
     username:str= Field(..., min_length=3, max_length=20, description="用户名")
     password: str= Field(..., min_length=8, max_length=20, description="密码")
     password_confirm: str= Field(..., min_length=8, max_length=20, description="确认密码")
@@ -40,5 +40,15 @@ class UserResponse(BaseModel):
     bio: Optional[str] = None
     phone: Optional[str] = None
 
+    class Config:
+        from_attributes = True
+
+class UserRequest(BaseModel):
+    username: str
+    nickname: Optional[str] = None
+    avatar: Optional[str] = None
+    gender: Optional[str] = None
+    bio: Optional[str] = None
+    phone: Optional[str] = None
     class Config:
         from_attributes = True

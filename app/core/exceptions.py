@@ -5,6 +5,8 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
+import traceback
+
 from fastapi import Request, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
@@ -35,12 +37,16 @@ async def validate_exception_handler(request: Request, exc: RequestValidationErr
     return JSONResponse(content=result.model_dump(), status_code=422)
 
 async def sql_exception_handler(request: Request, exc: SQLAlchemyError):
-    result = resp_error(code=500, message="数据库操作异常")
+    result = resp_error(code=500, message=f"数据库操作异常:{exc}")
     return JSONResponse(content=result.model_dump(), status_code=500)
 
 async def global_exception_handler(request: Request, exc: Exception):
-    result = resp_error(code=500, message="服务器未知异常")
+    result = resp_error(code=500, message=f"服务器未知异常:{exc,traceback.format_exc()}")
     return JSONResponse(content=result.model_dump(), status_code=500)
+
+async def value_error_handler(request: Request, exc: ValueError):
+    result = resp_error(code=400, message=f"{exc}")
+    return JSONResponse(content=result.model_dump(), status_code=400)
 
 def register_exception(app):
     app.add_exception_handler(AppBizException, biz_exception_handler)
@@ -48,4 +54,5 @@ def register_exception(app):
     app.add_exception_handler(RequestValidationError, validate_exception_handler)
     app.add_exception_handler(SQLAlchemyError, sql_exception_handler)
     app.add_exception_handler(Exception, global_exception_handler)
+    app.add_exception_handler(ValueError, value_error_handler)
 
