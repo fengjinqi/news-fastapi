@@ -18,7 +18,7 @@ from app.core.response import ResponseModel, resp_error, resp_success
 
 from app.models.users import User
 
-from app.schems.user import UserRegisterRequest, UserResponse, UserLogin, UserRequest
+from app.schems.user import UserRegisterRequest, UserResponse, UserLogin, UserRequest, UserPasswordRequest
 from app.services import users_service
 from app.utils.deps import get_current_user
 
@@ -88,3 +88,13 @@ async def update_me(param: UserRequest, id: Annotated[int, Path(gt=0, descriptio
     if user is None:
         return resp_error(code=400, message="用户更新失败")
     return resp_success(message="用户更新成功")
+
+@router.put("/{id}/password", summary="更新密码")
+async def update_password(param: UserPasswordRequest, id: Annotated[int, Path(gt=0, description="用户ID")],
+                          db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)) -> ResponseModel:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="无权限修改其他用户")
+    user = await users_service.update_password(db,id, param)
+    if user is None:
+        return resp_error(code=400, message="密码更新失败")
+    return resp_success(message="密码更新成功")

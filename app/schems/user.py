@@ -52,3 +52,17 @@ class UserRequest(BaseModel):
     phone: Optional[str] = None
     class Config:
         from_attributes = True
+
+class UserPasswordRequest(BaseModel):
+    old_password: str = Field(..., min_length=8, max_length=20, description="密码")
+    new_password: str = Field(..., min_length=8, max_length=20, description="新密码")
+    password_confirm: str = Field(..., min_length=8, max_length=20, description="确认密码")
+
+    @model_validator(mode="after")
+    def check_passwords_match(self):
+        if self.new_password != self.password_confirm:
+            raise ValueError("两次密码不一致")
+        return self
+
+    class Config:
+        from_attributes = True

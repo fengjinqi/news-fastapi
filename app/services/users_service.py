@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.crud.user_crud import CRUDUser
 from app.models.users import User
-from app.schems.user import UserRegisterRequest
+from app.schems.user import UserRegisterRequest, UserRequest, UserPasswordRequest
 from app.utils.security import verify_password
 
 if __name__ == '__main__':
@@ -48,6 +48,9 @@ async def get_by_username(db: AsyncSession, username: str) -> Optional[User]:
     return await CRUDUser.get_by_username(db, username)
 
 
-async def update(db,id, param):
+async def update(db: AsyncSession, id:int, param:UserRequest)->Optional[User]:
     return await CRUDUser.update(db, id, param)
 
+
+async def update_password(db: AsyncSession, id:int, param:UserPasswordRequest)->Optional[User]:
+    return await CRUDUser.update_password(db, id, param)
