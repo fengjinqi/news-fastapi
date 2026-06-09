@@ -79,8 +79,11 @@ async def get_me(current_user: User = Depends(get_current_user)) -> ResponseMode
     return resp_success(data=UserResponse.model_validate(current_user).model_dump())
 
 
-@router.put("/{id}", response_model=ResponseModel, summary="更新当前用户信息",dependencies=[Depends(get_current_user)])
-async def update_me(param: UserRequest, id: Annotated[int, Path(gt=0, description="用户ID")], db: AsyncSession = Depends(get_db)) -> ResponseModel:
+@router.put("/{id}", response_model=ResponseModel, summary="更新当前用户信息")
+async def update_me(param: UserRequest, id: Annotated[int, Path(gt=0, description="用户ID")],
+                    db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)) -> ResponseModel:
+    if current_user.id != id:
+        raise HTTPException(status_code=403, detail="无权限修改其他用户")
     user = await users_service.update(db,id, param)
     if user is None:
         return resp_error(code=400, message="用户更新失败")
