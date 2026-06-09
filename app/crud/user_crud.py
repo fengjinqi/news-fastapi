@@ -23,7 +23,7 @@ class CRUDUser:
         password = hash_password(user.password)
         obj = User(username=user.username, password=password)
         db.add(obj)
-        await db.commit()
+        await db.flush()
         await db.refresh(obj)
         return obj
 
@@ -45,7 +45,9 @@ class CRUDUser:
             existing = await CRUDUser.get_by_username(db, param.username)
             if existing is not None:
                 raise ValueError("用户名已存在")# 用户名已存在
-        for key, value in param.model_dump(exclude_unset=True).items():
+            # exclude_unset=True：前端完全没传的字段 → 不更新
+            # exclude_none=True：前端传了空字符串被转成 None 的字段 → 不更新
+        for key, value in param.model_dump(exclude_unset=True,exclude_none=True).items():
             setattr(obj, key, value)
         await db.flush()
         return obj
@@ -58,6 +60,6 @@ class CRUDUser:
         if not verify_password(param.old_password, obj.password):
             raise ValueError("旧密码错误")
         obj.password = hash_password(param.new_password)
-        await db.commit()
-        await db.refresh(obj)
+        #await db.commit()
+        await db.flush()
         return obj

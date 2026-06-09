@@ -20,7 +20,7 @@ from app.models.users import User
 
 from app.schems.user import UserRegisterRequest, UserResponse, UserLogin, UserRequest, UserPasswordRequest
 from app.services import users_service
-from app.utils.deps import get_current_user
+from app.core.deps import get_current_user
 
 router = APIRouter(prefix="/user", tags=["用户"])
 

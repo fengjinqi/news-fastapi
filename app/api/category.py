@@ -15,7 +15,7 @@ from app.core.response import ResponseModel, resp_success, resp_error
 
 from app.schems.category import CategoryRequest, CategoryResponse
 from app.services.category_service import CategoryService
-from app.utils.deps import get_current_user
+from app.core.deps import get_current_user
 
 router = APIRouter(prefix="/category", tags=["分类"])
 

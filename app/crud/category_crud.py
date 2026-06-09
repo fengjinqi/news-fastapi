@@ -56,10 +56,17 @@ class CRUDCategory:
         if obj is None:
             return None
 
-        for key, value in param.model_dump().items():
+        # 名称唯一性校验：仅当名称发生变化时检查
+        if param.name != obj.name:
+            existing = await db.execute(
+                select(CategoryModel).where(CategoryModel.name == param.name)
+            )
+            if existing.scalar_one_or_none() is not None:
+                raise ValueError("分类名称已存在")
+        for key, value in param.model_dump(exclude_unset=True).items():
             setattr(obj, key, value)
         await db.flush()
-        await db.refresh(obj)
+        #await db.refresh(obj)
         return obj
 
     @staticmethod

@@ -50,6 +50,13 @@ class UserRequest(BaseModel):
     gender: Optional[str] = None
     bio: Optional[str] = None
     phone: Optional[str] = None
+    @model_validator(mode="before")
+    def empty_str_to_none(cls, data):
+        if isinstance(data, dict):
+            for key, value in data.items():
+                if value == "":
+                    data[key] = None
+        return data
     class Config:
         from_attributes = True
 
