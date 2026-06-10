@@ -20,6 +20,7 @@ class NewsRespone(BaseModel):
     image: Optional[str] = None
     category_id: int
     views: int = 0
+    category_name: Optional[str] = None
     publish_time: Optional[datetime] = None
 
     @field_serializer("publish_time")

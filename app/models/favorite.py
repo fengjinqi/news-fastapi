@@ -6,7 +6,7 @@
 @Software  : PyCharm
 """
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import Integer, Index, UniqueConstraint
+from sqlalchemy import Integer, Index, UniqueConstraint, ForeignKey
 
 from app.models.base import BaseModel
 class FavoriteModel(BaseModel):
@@ -18,8 +18,8 @@ class FavoriteModel(BaseModel):
         Index('idx_news_id', 'news_id'),
     )
     id:Mapped[int]=mapped_column(Integer, primary_key=True, autoincrement=True, comment="主键ID")
-    user_id: Mapped[int] = mapped_column(Integer,nullable=False, comment="用户ID")
-    news_id: Mapped[int] = mapped_column(Integer,nullable=False, comment="新闻ID")
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False, comment="用户ID")
+    news_id: Mapped[int] = mapped_column(Integer, ForeignKey("news.id"), nullable=False, comment="新闻ID")
 
     def __repr__(self):
         return f"<FavoriteModel(id={self.id}, user_id={self.user_id}, news_id={self.news_id})>"

@@ -75,7 +75,7 @@ async def refresh_token(refresh_token: str, db: AsyncSession = Depends(get_db)) 
 
 
 @router.get("/info", response_model=ResponseModel, summary="获取当前用户信息")
-async def get_me(current_user: User = Depends(get_current_user)) -> ResponseModel:
+async def get_me(current_user: User = Depends(get_current_user)) -> ResponseModel[UserResponse]:
     return resp_success(data=UserResponse.model_validate(current_user).model_dump())
 
 

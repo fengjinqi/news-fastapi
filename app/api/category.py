@@ -21,13 +21,13 @@ router = APIRouter(prefix="/category", tags=["分类"])
 
 
 @router.get("", summary="获取列表")
-async def get_news_category(db: AsyncSession = Depends(get_db)) -> ResponseModel:
+async def get_news_category(db: AsyncSession = Depends(get_db)) -> ResponseModel[list[CategoryResponse]]:
     data = await CategoryService.read(db)
     return resp_success(data=[CategoryResponse.model_validate(item).model_dump() for item in data])
 
 
 @router.post("", dependencies=[Depends(get_current_user)], summary="创建分类")
-async def create_news_category(param: CategoryRequest, db: AsyncSession = Depends(get_db)) -> ResponseModel:
+async def create_news_category(param: CategoryRequest, db: AsyncSession = Depends(get_db)) -> ResponseModel[CategoryResponse]:
     obj = await CategoryService.create(db, param)
     return resp_success(data=CategoryResponse.model_validate(obj).model_dump())
 
@@ -35,7 +35,7 @@ async def create_news_category(param: CategoryRequest, db: AsyncSession = Depend
 @router.put("/{id}", dependencies=[Depends(get_current_user)], summary="更新分类")
 async def update_news_category(id: Annotated[int, Path(gt=0, description="分类ID")],
                                param: Annotated[CategoryRequest, Body(..., description="分类参数")],
-                               db: AsyncSession = Depends(get_db)) -> ResponseModel:
+                               db: AsyncSession = Depends(get_db)) -> ResponseModel[CategoryResponse]:
     obj = await CategoryService.update(db, id, param)
     if obj is None:
         return resp_error(code=404, message="分类不存在")

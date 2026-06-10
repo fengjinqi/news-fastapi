@@ -24,7 +24,7 @@ router = APIRouter(prefix="/news", tags=["新闻"])
 async def get_news_category(id: Annotated[int, Query(description="分类ID")],
                             db: AsyncSession = Depends(get_db),
                             page: Annotated[int, Query(gt=0, description="页码")] = 1,
-                            size: Annotated[int, Query(description="每页数量")] = 10) -> ResponseModel:
+                            size: Annotated[int, Query(description="每页数量")] = 10) -> ResponseModel[NewsListResponse]:
     """
     按分类查新闻列表
     @param id: 分类ID
@@ -40,14 +40,13 @@ async def get_news_category(id: Annotated[int, Query(description="分类ID")],
 
 @router.get("/{id}", response_model=ResponseModel, summary="获取详情页")
 async def get_news_detail(id: Annotated[int, Path(gt=0, description="新闻ID")],
-                          db: AsyncSession = Depends(get_db)) -> ResponseModel:
+                          db: AsyncSession = Depends(get_db)) -> ResponseModel[NewsRespone]:
     """
     获取新闻详情
     @param id: 新闻ID
     @return: 新闻详情
     """
     rows,category_name,related_news = await news_service.read_detail(db, id)
-    print(rows,category_name,related_news,'rows')
     if rows is None:
         return resp_error(code=404, message="新闻不存在")
 
