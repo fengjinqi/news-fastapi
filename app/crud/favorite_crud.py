@@ -7,7 +7,7 @@
 """
 from typing import Sequence, Tuple
 
-from sqlalchemy import select, Row, func
+from sqlalchemy import select, Row, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.category import CategoryModel
@@ -44,16 +44,6 @@ class FavoriteCrud:
         await db.refresh(obj)
         return obj is not None
 
-    @staticmethod
-    async def delete(db: AsyncSession, user_id: int, news_id: int) -> bool:
-        """
-        删除收藏
-        :param db: 数据库会话
-        :param user_id: 用户ID
-        :param news_id: 新闻ID
-        :return: 是否成功
-        """
-        pass
 
     @staticmethod
     async def get_favorite(db: AsyncSession, user_id: User, news_id: int) -> bool:
@@ -89,3 +79,15 @@ class FavoriteCrud:
         total = await db.scalar(select(func.count()).where(FavoriteModel.user_id == user_id.id))
 
         return result.all(), total
+
+    @staticmethod
+    async def delete_favorite(db: AsyncSession, current_user: User, id: int) -> bool:
+        """
+        删除收藏
+        :param db: 数据库会话
+        :param current_user: 当前用户
+        :param id: 收藏ID
+        :return: 是否成功
+        """
+        result = await db.execute(delete(FavoriteModel).where(FavoriteModel.user_id == current_user.id, FavoriteModel.news_id == id))
+        return result.rowcount > 0

@@ -26,3 +26,7 @@ async def create_favorite(param:FavoriteRequest, db:AsyncSession, current_user:U
 
 async def get_favorite_list(db:AsyncSession, current_user:User, page:int, size:int)-> Tuple[Sequence[Row[tuple[NewsModel, str]]], int | None]:
     return await FavoriteCrud.get_favorite_list(db, current_user, page, size)
+
+
+async def delete_favorite(db:AsyncSession, current_user:User, id:int)->bool:
+    return await FavoriteCrud.delete_favorite(db, current_user, id)

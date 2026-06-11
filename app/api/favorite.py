@@ -63,12 +63,13 @@ async def create_favorite(     param: Annotated[FavoriteRequest, Body(..., descr
     return resp_success( message="收藏成功")
 
 
-@router.delete("")
-async def delete_favorite(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db),
-                          id: Annotated[int, Query(gt=0, description="新闻ID")] = 0) -> ResponseModel:
+@router.delete("/{id}")
+async def delete_favorite(id: Annotated[int, Path(gt=0, description="新闻ID")],current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db),
+                          ) -> ResponseModel:
     """
     取消收藏
     """
-    pass
     result = await favorite_service.delete_favorite(db, current_user, id)
+    if not result:
+        return resp_error(code=400, message="取消收藏失败")
     return resp_success(data=result, message="取消收藏成功")
