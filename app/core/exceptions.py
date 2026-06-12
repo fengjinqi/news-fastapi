@@ -41,9 +41,9 @@ async def sql_exception_handler(request: Request, exc: SQLAlchemyError):
     return JSONResponse(content=result.model_dump(), status_code=500)
 
 async def global_exception_handler(request: Request, exc: Exception):
-    result = resp_error(code=500, message=f"服务器未知异常:{exc,traceback.format_exc()}")
+    logger.error(f"服务器未知异常:{traceback.format_exc()}")
+    result = resp_error(code=500, message=f"服务器未知异常")
     return JSONResponse(content=result.model_dump(), status_code=500)
-
 async def value_error_handler(request: Request, exc: ValueError):
     result = resp_error(code=400, message=f"{exc}")
     return JSONResponse(content=result.model_dump(), status_code=400)

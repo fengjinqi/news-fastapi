@@ -22,10 +22,16 @@ class NewsRespone(BaseModel):
     views: int = 0
     category_name: Optional[str] = None
     publish_time: Optional[datetime] = None
+    view_time: Optional[datetime] = None
 
     @field_serializer("publish_time")
     def serialize_publish_time(self, v: Optional[datetime]) -> Optional[str]:
         return v.strftime("%Y-%m-%d %H:%M:%S") if v else None
+
+    @field_serializer("view_time")
+    def serialize_view_time(self, v: Optional[datetime]) -> Optional[str]:
+        return v.strftime("%Y-%m-%d %H:%M:%S") if v else None
+
 
     class Config:
         from_attributes = True

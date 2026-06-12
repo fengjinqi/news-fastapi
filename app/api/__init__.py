@@ -7,10 +7,11 @@
 """
 from fastapi import APIRouter
 
-from app.api import news, category, users, favorite
+from app.api import news, category, users, favorite, history
 
 router = APIRouter()
 router.include_router(news.router)
 router.include_router(category.router)
 router.include_router(users.router)
 router.include_router(favorite.router)
+router.include_router(history.router)

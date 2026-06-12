@@ -5,7 +5,7 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Sequence, Tuple, Optional
+from typing import Sequence,  Optional
 
 from sqlalchemy import select,  update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,7 +15,7 @@ from app.models.category import CategoryModel
 from app.models.news import NewsModel
 
 
-async def read(db: AsyncSession, id: int, page: int, size: int) -> Tuple[Sequence[NewsModel],int]:
+async def read(db: AsyncSession, id: int, page: int, size: int) -> tuple[Sequence[NewsModel],int]:
     """
     查询新闻
     :param id:
@@ -31,7 +31,7 @@ async def read(db: AsyncSession, id: int, page: int, size: int) -> Tuple[Sequenc
     return result.scalars().all(),total
 
 
-async def read_detail(db: AsyncSession, id:int)->Tuple[Optional[NewsModel], Optional[str], Sequence[NewsModel]]:
+async def read_detail(db: AsyncSession, id:int)->tuple[Optional[NewsModel], Optional[str], Sequence[NewsModel]]:
     """
     查询新闻详情
     并且更新新闻的浏览次数

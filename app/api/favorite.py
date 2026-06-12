@@ -46,7 +46,6 @@ async def get_favorite_list(current_user: User = Depends(get_current_user), db: 
         news_list.append(news)
 
 
-    print(news_list)
     return resp_success(data=NewsListResponse(total=total, list=news_list), message="获取收藏列表成功")
 
 

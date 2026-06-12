@@ -5,7 +5,7 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Sequence, Tuple
+from typing import Sequence
 
 from sqlalchemy import select, Row, func, delete
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -60,7 +60,7 @@ class FavoriteCrud:
         return obj is not None
 
     @staticmethod
-    async def get_favorite_list(db: AsyncSession, user_id: User, page: int, page_size: int) -> Tuple[
+    async def get_favorite_list(db: AsyncSession, user_id: User, page: int, page_size: int) -> tuple[
         Sequence[Row[tuple[NewsModel, str]]], int | None]:
         """
         获取收藏列表
@@ -90,4 +90,4 @@ class FavoriteCrud:
         :return: 是否成功
         """
         result = await db.execute(delete(FavoriteModel).where(FavoriteModel.user_id == current_user.id, FavoriteModel.news_id == id))
-        return result.rowcount > 0
+        return result.rowcount > 0 # type: ignore[call-arg]

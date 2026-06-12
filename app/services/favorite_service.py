@@ -5,7 +5,7 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Sequence, Tuple
+from typing import Sequence
 
 from sqlalchemy import Row
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -24,7 +24,7 @@ async def create_favorite(param:FavoriteRequest, db:AsyncSession, current_user:U
     return await FavoriteCrud.create(param, db, current_user)
 
 
-async def get_favorite_list(db:AsyncSession, current_user:User, page:int, size:int)-> Tuple[Sequence[Row[tuple[NewsModel, str]]], int | None]:
+async def get_favorite_list(db:AsyncSession, current_user:User, page:int, size:int)-> tuple[Sequence[Row[tuple[NewsModel, str]]], int | None]:
     return await FavoriteCrud.get_favorite_list(db, current_user, page, size)
 
 

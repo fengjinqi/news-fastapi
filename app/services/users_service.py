@@ -15,18 +15,6 @@ from app.models.users import User
 from app.schems.user import UserRegisterRequest, UserRequest, UserPasswordRequest
 from app.utils.security import verify_password
 
-if __name__ == '__main__':
-    from pwdlib import PasswordHash
-
-    pwd_hash = PasswordHash.recommended()
-
-    # 加密
-    hashed = pwd_hash.hash("12345678")
-    print(
-        hashed)
-    # 验证
-    print(pwd_hash.verify("12345678", hashed))  # # True
-
 
 async def create(db: AsyncSession, user: UserRegisterRequest) -> User:
     return await CRUDUser.create(db, user)
