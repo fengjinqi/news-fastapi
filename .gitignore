@@ -3,3 +3,8 @@
 __pycache__/
 *.pyc
 .idea/
+.vscode/
+dump.rdb
+*.rdb
+logs/
+

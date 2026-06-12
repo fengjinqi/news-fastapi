@@ -23,7 +23,7 @@ router = APIRouter(prefix="/category", tags=["分类"])
 @router.get("", summary="获取列表")
 async def get_news_category(db: AsyncSession = Depends(get_db)) -> ResponseModel[list[CategoryResponse]]:
     data = await CategoryService.read(db)
-    return resp_success(data=[CategoryResponse.model_validate(item).model_dump() for item in data])
+    return resp_success(data=data)
 
 
 @router.post("", dependencies=[Depends(get_current_user)], summary="创建分类")

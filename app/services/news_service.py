@@ -5,17 +5,50 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Sequence,  Optional
+from app.schems.news import NewsRespone
+from app.utils.RedisUtil import RedisUtil
 
 from sqlalchemy.ext.asyncio import AsyncSession
-
 from app.crud import news_crud
-from app.models.news import NewsModel
 
 
-async def read(db: AsyncSession, id: int, page: int, size: int) -> tuple[Sequence[NewsModel],int]:
-    return await news_crud.read(db,id, page, size)
+async def read(db: AsyncSession, id: int, page: int, size: int) -> tuple[list[NewsRespone], int]:
+    """
+    查询新闻
+    :param db:
+    :param id:
+    :param page:
+    :param size:
+    :return:
+    """
+    cache_key = f"news:category:{id}:page:{page}:size:{size}"
+    cached = await RedisUtil.get(cache_key)
+    if cached:
+        return cached["list"], cached["total"]
+    news, total = await news_crud.read(db, id, page, size)
+    result = [NewsRespone.model_validate(item).model_dump(mode="json") for item in news]
+    await RedisUtil.set(cache_key, {
+        "list": result,
+        "total": total
+    }, None)
+    return result, total
 
 
-async def read_detail(db: AsyncSession, id: int)-> tuple[Optional[NewsModel], Optional[str], Sequence[NewsModel]]:
-    return await news_crud.read_detail(db, id)
+async def read_detail(db: AsyncSession, id: int) -> NewsRespone:
+    """
+    查询新闻详情
+    :param db:
+    :param id:
+    :return:
+    """
+    cache_key = f"news:detail:{id}"
+    cached = await RedisUtil.get(cache_key)
+    if cached:
+        return cached
+    news, category_name, related_news = await news_crud.read_detail(db, id)
+    newResult = NewsRespone.model_validate(news).model_dump(mode="json")
+    newResult["category_name"] = category_name
+    newResult["related_news"] = [NewsRespone.model_validate(item).model_dump(mode="json") for item in related_news]
+    if news is not None:
+        await RedisUtil.set(cache_key, newResult, None)
+    return newResult

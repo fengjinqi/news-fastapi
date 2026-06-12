@@ -6,13 +6,16 @@ from starlette.middleware.cors import CORSMiddleware
 from app.api import router
 from app.core.db import create_db
 from app.core.exceptions import register_exception
+from app.core.redis import init_redis, close_redis
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # startup
     await create_db()
+    await init_redis()
     yield
+    await close_redis()
     # shutdown（如有关闭逻辑写在这里）
 
 
