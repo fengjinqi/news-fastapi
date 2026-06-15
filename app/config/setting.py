@@ -5,6 +5,8 @@
 @File      : setting.py
 @Software  : PyCharm
 """
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
 import os
@@ -34,7 +36,21 @@ class Settings(BaseSettings):
 
     @property
     def DATABASE_URL(self) -> str:
-        return f"mysql+aiomysql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
-
-
+        return f"mysql+aiomysql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}?charset=utf8mb4"
 settings = Settings()  # type: ignore[call-arg]
+# 项目根目录
+BASE_DIR = Path(__file__).parent.parent.parent
+
+# 日志目录
+LOG_DIR = os.path.join(BASE_DIR, "logs")
+if not os.path.exists(LOG_DIR):
+    os.makedirs(LOG_DIR, exist_ok=True)
+
+# 日志基础配置
+LOG_CONFIG = {
+    "log_level": "DEBUG" if settings.ENV == "dev" else "INFO",
+    "log_file_max_size": 50 * 1024 * 1024,  # 单文件50MB切割
+    "log_file_backup_count": 10,  # 最多保留10个备份文件
+    "console_log": True,          # 是否开启控制台打印
+    "file_log": True,             # 是否开启文件落盘
+}

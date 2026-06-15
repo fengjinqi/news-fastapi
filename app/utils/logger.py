@@ -7,50 +7,89 @@
 """
 import logging
 import os
+import sys
+from contextvars import ContextVar
+from logging import StreamHandler
 from logging.handlers import TimedRotatingFileHandler
+from app.config.setting import LOG_DIR, LOG_CONFIG
 
-from app.config.setting import settings
+# 日志格式化模板
+_trace_id_var: ContextVar[str] = ContextVar("trace_id", default="00000000000000000000000000000000")
 
-LOG_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-    "logs",
+# asctime:时间 levelname:级别 process:进程 threadName:线程 trace_id:链路ID name:模块 message:日志内容 exc_info:异常栈
+LOG_FORMAT = (
+    "%(asctime)s | %(levelname)-8s | %(process)d | %(threadName)s | trace_id:%(trace_id)s | %(name)s | %(message)s"
 )
-os.makedirs(LOG_DIR, exist_ok=True)
+DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
-_LOG_LEVEL = logging.DEBUG if settings.ENV == "dev" else logging.INFO
+# 给日志record增加默认trace_id字段，防止无链路时报错
+class TraceFilter(logging.Filter):
+    def filter(self, record):
+        record.trace_id = _trace_id_var.get()
+        return True
 
-_FORMATTER = logging.Formatter(
-    fmt="%(asctime)s - %(name)s - %(levelname)s - %(filename)s:%(lineno)d - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+def setup_logger():
+    root_logger = logging.getLogger()
+    root_logger.setLevel(LOG_CONFIG["log_level"])
+    root_logger.handlers.clear()
+
+    formatter = logging.Formatter(LOG_FORMAT, datefmt=DATE_FORMAT)
+    trace_filter = TraceFilter()
+
+    if LOG_CONFIG["console_log"]:
+        console_handler = StreamHandler(stream=sys.stdout)
+        console_handler.setFormatter(formatter)
+        console_handler.addFilter(trace_filter)
+        root_logger.addHandler(console_handler)
+
+    if LOG_CONFIG["file_log"]:
+        backup_cnt = LOG_CONFIG["log_file_backup_count"]
+
+        all_file = os.path.join(LOG_DIR, "all.log")
+        all_handler = TimedRotatingFileHandler(
+            all_file, when="midnight", backupCount=backup_cnt, encoding="utf-8"
+        )
+        all_handler.suffix = "%Y-%m-%d"
+        all_handler.setFormatter(formatter)
+        all_handler.addFilter(trace_filter)
+        root_logger.addHandler(all_handler)
+
+        error_file = os.path.join(LOG_DIR, "error.log")
+        error_handler = TimedRotatingFileHandler(
+            error_file, when="midnight", backupCount=backup_cnt, encoding="utf-8"
+        )
+        error_handler.suffix = "%Y-%m-%d"
+        error_handler.setFormatter(formatter)
+        error_handler.addFilter(trace_filter)
+        error_handler.setLevel(logging.ERROR)
+        root_logger.addHandler(error_handler)
+
+        access_file = os.path.join(LOG_DIR, "access.log")
+        access_handler = TimedRotatingFileHandler(
+            access_file, when="midnight", backupCount=backup_cnt, encoding="utf-8"
+        )
+        access_handler.suffix = "%Y-%m-%d"
+        access_handler.setFormatter(formatter)
+        access_handler.addFilter(trace_filter)
+        access_logger = logging.getLogger("access")
+        access_logger.handlers.clear()
+        access_logger.addHandler(access_handler)
+        access_logger.propagate = False
+
+    logging.getLogger("uvicorn").setLevel(logging.WARNING)
+    logging.getLogger("uvicorn.access").setLevel(logging.WARNING)
+    logging.getLogger("fastapi").setLevel(logging.INFO)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("sqlalchemy").setLevel(logging.WARNING)
 
 
-def _build_console_handler() -> logging.StreamHandler:
-    handler = logging.StreamHandler()
-    handler.setLevel(_LOG_LEVEL)
-    handler.setFormatter(_FORMATTER)
-    return handler
 
-
-def _build_file_handler() -> TimedRotatingFileHandler:
-    handler = TimedRotatingFileHandler(
-        filename=os.path.join(LOG_DIR, "app.log"),
-        when="midnight",
-        interval=1,
-        backupCount=30,
-        encoding="utf-8",
-    )
-    handler.setLevel(_LOG_LEVEL)
-    handler.setFormatter(_FORMATTER)
-    handler.suffix = "%Y-%m-%d"
-    return handler
-
-
-def get_logger(name: str) -> logging.Logger:
+# 全局日志获取函数
+def get_logger(name: str = "app") -> logging.Logger:
     logger = logging.getLogger(name)
-    if not logger.handlers:
-        logger.setLevel(_LOG_LEVEL)
-        logger.addHandler(_build_console_handler())
-        logger.addHandler(_build_file_handler())
-        logger.propagate = False
     return logger
+
+# 初始化执行
+setup_logger()
+logger = get_logger("app")
+access_logger = get_logger("access")

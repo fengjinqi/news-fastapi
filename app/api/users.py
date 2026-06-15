@@ -18,7 +18,8 @@ from app.core.response import ResponseModel, resp_error, resp_success
 
 from app.models.users import User
 
-from app.schems.user import UserRegisterRequest, UserResponse, UserLogin, UserRequest, UserPasswordRequest
+from app.schems.user import UserRegisterRequest, UserResponse, UserLogin, UserRequest, UserPasswordRequest, \
+    RefreshTokenRequest
 from app.services import users_service
 from app.core.deps import get_current_user
 
@@ -62,8 +63,8 @@ async def login_form(form: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
     return {"access_token": access_token, "token_type": "bearer"}
 
 @router.post("/refresh")
-async def refresh_token(refresh_token: str, db: AsyncSession = Depends(get_db)) -> ResponseModel:
-    payload = decode_access_token(refresh_token)
+async def refresh_token(refresh_token: RefreshTokenRequest, db: AsyncSession = Depends(get_db)) -> ResponseModel:
+    payload = decode_access_token(refresh_token.refresh_token)
     if payload is None or payload.get("type") != "refresh":
         return resp_error(code=401, message="无效的refresh_token")
     user_id = int(payload.get("sub"))

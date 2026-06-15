@@ -10,11 +10,15 @@ from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
-from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 
 from app.config.setting import settings
+from app.core.exceptions import get_logger
 
-Base = declarative_base()
+logger = get_logger(__name__)
+
+class Base(DeclarativeBase):
+    pass
 
 # 创建异步数据库引擎
 async_engine = create_async_engine(
@@ -28,6 +32,7 @@ async_engine = create_async_engine(
     pool_recycle=3600,  # 连接最大存活时间（秒），防止MySQL默认8小时断开
     pool_pre_ping=True,  # 取连接前先探测存活，避免使用已断开的连接
     pool_reset_on_return="rollback",  # 连接归还池时的重置策略，rollback比commit更安全
+    connect_args={"connect_timeout": 10}
 )
 
 # 创建异步会话工厂
@@ -74,5 +79,5 @@ async def create_db():
         try:
             await conn.run_sync(Base.metadata.create_all)
         except Exception as e:
-            print(e)
+            logger.error(f"create_db 失败 error={e}")
             raise e

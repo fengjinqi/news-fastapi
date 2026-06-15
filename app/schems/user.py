@@ -73,3 +73,10 @@ class UserPasswordRequest(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str = Field(..., description="刷新令牌")
+
+    class  Config:
+        from_attributes = True

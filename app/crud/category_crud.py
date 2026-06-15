@@ -5,7 +5,7 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import  Sequence
+from typing import Sequence, Optional
 
 from sqlalchemy import select
 
@@ -44,7 +44,7 @@ class CRUDCategory:
         return result.scalars().all()
 
     @staticmethod
-    async def update(db: AsyncSession, id: int, param: CategoryRequest) -> type[CategoryModel] | None:
+    async def update(db: AsyncSession, id: int, param: CategoryRequest) -> Optional[CategoryModel]:
         """
         更新数据
         :param db: 数据库会话
@@ -70,7 +70,7 @@ class CRUDCategory:
         return obj
 
     @staticmethod
-    async def delete(db: AsyncSession, id: int) -> type[CategoryModel] | None:
+    async def delete(db: AsyncSession, id: int) -> Optional[CategoryModel]:
         """
         删除数据
         :param db: 数据库会话

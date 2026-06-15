@@ -71,7 +71,6 @@ class RedisUtil:
         :return: 是否成功
         """
         try:
-            print(hasattr(value, "model_dump_json"))
             if hasattr(value, "model_dump_json"):
                 val = value.model_dump_json()
             else:

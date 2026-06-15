@@ -8,7 +8,8 @@
 from datetime import datetime
 
 from sqlalchemy.orm import Mapped
-from sqlalchemy.testing.schema import mapped_column
+from sqlalchemy.orm import mapped_column
+
 
 from app.core.db import Base
 from sqlalchemy import DateTime, func, TIMESTAMP
