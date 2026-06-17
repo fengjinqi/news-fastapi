@@ -42,10 +42,10 @@ async def update_news_category(id: Annotated[int, Path(gt=0, description="分类
     return resp_success(data=CategoryResponse.model_validate(obj).model_dump())
 
 
-@router.delete("/{id}", dependencies=[Depends(get_current_user)], summary="删除分类")
-async def delete_news_category(id: Annotated[int, Path(gt=1, description="分类ID")],
+@router.delete("/{category_id}", dependencies=[Depends(get_current_user)], summary="删除分类")
+async def delete_news_category(category_id: Annotated[int, Path(gt=1, description="分类ID")],
                                db: AsyncSession = Depends(get_db)) -> ResponseModel:
-    obj = await CategoryService.delete(db, id)
+    obj = await CategoryService.delete(db, category_id)
 
     if obj is None:
         return resp_error(code=404, message="分类不存在")

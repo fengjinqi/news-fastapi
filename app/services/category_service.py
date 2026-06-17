@@ -62,8 +62,8 @@ class CategoryService:
         return obj
 
     @staticmethod
-    async def delete(db: AsyncSession, id: int):
-        obj=await CRUDCategory.delete(db, id)
+    async def delete(db: AsyncSession, category_id: int):
+        obj=await CRUDCategory.delete(db, category_id)
         await RedisUtil.delete(CategoryService._cache_key)
         return obj
 

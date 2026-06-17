@@ -57,15 +57,14 @@ async def log_middleware(request: Request, call_next):
     token = _trace_id_var.set(trace_id)
     try:
         response = await call_next(request)
+        cost_ms = round((time.time() - start_time) * 1000, 2)
+        access_logger.info(
+            f"method={request.method} path={request.url.path} status={response.status_code} cost={cost_ms}ms client={request.client.host}"
+        )
+        response.headers["X-Trace-ID"] = trace_id
+        return response
     finally:
         _trace_id_var.reset(token)
-
-    cost_ms = round((time.time() - start_time) * 1000, 2)
-    access_logger.info(
-        f"method={request.method} path={request.url.path} status={response.status_code} cost={cost_ms}ms client={request.client.host}"
-    )
-    response.headers["X-Trace-ID"] = trace_id
-    return response
 
 # @app.on_event("startup")
 # async def startup_event():

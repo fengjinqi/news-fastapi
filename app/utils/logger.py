@@ -16,6 +16,7 @@ from app.config.setting import LOG_DIR, LOG_CONFIG
 # 日志格式化模板
 _trace_id_var: ContextVar[str] = ContextVar("trace_id", default="00000000000000000000000000000000")
 
+
 # asctime:时间 levelname:级别 process:进程 threadName:线程 trace_id:链路ID name:模块 message:日志内容 exc_info:异常栈
 LOG_FORMAT = (
     "%(asctime)s | %(levelname)-8s | %(process)d | %(threadName)s | trace_id:%(trace_id)s | %(name)s | %(message)s"
