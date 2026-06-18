@@ -34,6 +34,9 @@ async def read(db: AsyncSession, id: int, page: int, size: int) -> tuple[list[Ne
     return result, total
 
 
+FLUSH_THRESHOLD = 10
+
+
 async def read_detail(db: AsyncSession, id: int) -> NewsRespone:
     """
     查询新闻详情
@@ -42,13 +45,22 @@ async def read_detail(db: AsyncSession, id: int) -> NewsRespone:
     :return:
     """
     cache_key = f"news:detail:{id}"
+    views_key = f"news:views:{id}"
+    delta = await RedisUtil.incr(views_key)
+    if delta >= FLUSH_THRESHOLD:
+        await news_crud.increment_views(db, id, delta)
+        await RedisUtil.delete(views_key)
+        await RedisUtil.delete(cache_key)
+        delta = 0
     cached = await RedisUtil.get(cache_key)
     if cached:
+        cached['views'] = cached['views'] + delta
         return cached
     news, category_name, related_news = await news_crud.read_detail(db, id)
     newResult = NewsRespone.model_validate(news).model_dump(mode="json")
     newResult["category_name"] = category_name
     newResult["related_news"] = [NewsRespone.model_validate(item).model_dump(mode="json") for item in related_news]
+    newResult["views"] = news.views + delta
     if news is not None:
         await RedisUtil.set(cache_key, newResult, None)
     return newResult

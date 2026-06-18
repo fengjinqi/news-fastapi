@@ -5,9 +5,9 @@
 @File      : __init__.py.py
 @Software  : PyCharm
 """
-from typing import Sequence,  Optional
+from typing import Sequence, Optional
 
-from sqlalchemy import select,  update
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.functions import func
 
@@ -15,7 +15,7 @@ from app.models.category import CategoryModel
 from app.models.news import NewsModel
 
 
-async def read(db: AsyncSession, id: int, page: int, size: int) -> tuple[Sequence[NewsModel],int]:
+async def read(db: AsyncSession, id: int, page: int, size: int) -> tuple[Sequence[NewsModel], int]:
     """
     查询新闻
     :param id:
@@ -24,14 +24,15 @@ async def read(db: AsyncSession, id: int, page: int, size: int) -> tuple[Sequenc
     :param db: 数据库会话
     :return: 查询的新闻
     """
-    #print( await db.scalar(count(NewsModel.id)))
+    # print( await db.scalar(count(NewsModel.id)))
     total = await db.scalar(select(func.count()).select_from(NewsModel).where(NewsModel.category_id == id))
-    result = await db.execute(select(NewsModel).where(NewsModel.category_id == id).offset((page - 1) * size).limit(size))
+    result = await db.execute(
+        select(NewsModel).where(NewsModel.category_id == id).offset((page - 1) * size).limit(size))
 
-    return result.scalars().all(),total
+    return result.scalars().all(), total
 
 
-async def read_detail(db: AsyncSession, id:int)->tuple[Optional[NewsModel], Optional[str], Sequence[NewsModel]]:
+async def read_detail(db: AsyncSession, id: int) -> tuple[Optional[NewsModel], Optional[str], Sequence[NewsModel]]:
     """
     查询新闻详情
     并且更新新闻的浏览次数
@@ -40,7 +41,9 @@ async def read_detail(db: AsyncSession, id:int)->tuple[Optional[NewsModel], Opti
     :return: 新闻详情
     """
 
-    result = await db.execute(select(NewsModel, CategoryModel.name.label("category_name")).where(NewsModel.id == id).join(CategoryModel, NewsModel.category_id == CategoryModel.id))
+    result = await db.execute(
+        select(NewsModel, CategoryModel.name.label("category_name")).where(NewsModel.id == id).join(CategoryModel,
+                                                                                                    NewsModel.category_id == CategoryModel.id))
     row = result.first()
     if row is None:
         return None, None, []
@@ -56,4 +59,18 @@ async def read_detail(db: AsyncSession, id:int)->tuple[Optional[NewsModel], Opti
     related_news = related_news_result.scalars().all()
     # 返回当前新闻详情和分类名称
     return news, category_name, related_news
+
+
+async def increment_views(db: AsyncSession, id: int, count: int) -> int:
+    """
+    增加新闻浏览次数
+    :param db: 数据库会话
+    :param id: 新闻id
+    :param count: 增加的次数
+    :return: 新闻的总浏览次数
+    """
+    await db.execute(update(NewsModel).where(NewsModel.id == id).values(views=NewsModel.views + count))
+    result = await db.scalar(select(NewsModel.views).where(NewsModel.id == id))
+    return result
+
 
