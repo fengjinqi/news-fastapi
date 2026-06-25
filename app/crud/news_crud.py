@@ -48,7 +48,7 @@ async def read_detail(db: AsyncSession, id: int) -> tuple[Optional[NewsModel], O
     if row is None:
         return None, None, []
     news, category_name = row[0], row[1]
-    await db.execute(update(NewsModel).where(NewsModel.id == id).values(views=NewsModel.views + 1))
+    # await db.execute(update(NewsModel).where(NewsModel.id == id).values(views=NewsModel.views + 1))
     # 查询同分类下的相关新闻（排除当前新闻），按浏览量和发布时间降序排列，取前5条
     related_news_result = await db.execute(
         select(NewsModel)

@@ -12,6 +12,7 @@ from fastapi.params import Query, Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_db
+from app.core.deps import rate_limit
 
 from app.core.response import resp_success, ResponseModel, resp_error
 from app.schems.news import NewsRespone, NewsListResponse
@@ -40,7 +41,7 @@ async def get_news_category(id: Annotated[int, Query(description="分类ID")],
 
 
 
-@router.get("/{id}", response_model=ResponseModel, summary="获取详情页")
+@router.get("/{id}", response_model=ResponseModel, summary="获取详情页",dependencies=[Depends(rate_limit(max_requests=10, window_seconds=60))])
 async def get_news_detail(id: Annotated[int, Path(gt=0, description="新闻ID")],
                           db: AsyncSession = Depends(get_db)) -> ResponseModel[NewsRespone]:
     """

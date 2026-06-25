@@ -6,16 +6,22 @@
 @Software  : PyCharm
 """
 
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.db import get_db
+from app.core.exceptions import AppBizException
 from app.models.users import User
 from app.core.jwt import decode_access_token
 from app.services import users_service
+from app.utils.RedisUtil import RedisUtil
 
+from app.utils.logger import get_logger
+
+logger = get_logger(__name__)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/user/login/form")
+
 
 async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)) -> User:
     payload = decode_access_token(token)
@@ -26,3 +32,22 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     if user is None:
         raise HTTPException(status_code=401, detail="用户不存在")
     return user
+
+
+def rate_limit(max_requests: int = 10, window_seconds: int = 60):
+    async def _rate_limiter(request: Request):
+        client_ip = request.client.host if request.client else 'unknown'
+        path = request.url.path
+        rate_key = f"rate_limit:{client_ip}:{path}"
+        try:
+            count = await RedisUtil.incr(rate_key, ex=window_seconds)
+            print(f"count: {count}",rate_key)
+            if count > max_requests:
+                logger.warning(f"限流触发: {client_ip}:{path}")
+                raise AppBizException(code=429, msg="请求过于频繁")
+        except AppBizException:
+            raise
+        except Exception as e:
+            logger.warning(f"限流降级放行: {client_ip}:{path} error={e}")
+
+    return _rate_limiter
