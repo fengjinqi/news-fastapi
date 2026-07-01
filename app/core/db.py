@@ -7,7 +7,7 @@
 """
 from typing import AsyncGenerator
 
-
+from sqlalchemy import event
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
@@ -68,6 +68,13 @@ async def get_db() -> AsyncGenerator[AsyncSession , None]:
         finally:
             await session.close()
 
+@event.listens_for(async_engine.pool, "checkout")
+def on_checkout(dbapi_conn, connection_rec, connection_proxy):
+    logger.debug(f"连接池 checkout, 当前活跃: {async_engine.pool.status()}")
+
+@event.listens_for(async_engine.pool, "checkin")
+def on_checkin(dbapi_conn, connection_rec):
+    logger.debug(f"连接池 checkin, 当前空闲: {async_engine.pool.status()}")
 
 async def create_db():
     """
